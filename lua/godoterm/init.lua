@@ -4,6 +4,7 @@ local finders = require('telescope.finders')
 local actions = require "telescope.actions"
 local action_state = require "telescope.actions.state"
 
+-- local g_acts = require "godoterm.actions"
 local g_acts = require "godoterm.actions"
 
 local M = {}
@@ -11,7 +12,8 @@ local M = {}
 ---Launches a Godot action
 ---@param action_name string
 local launch_action =  function (action_name)
-    -- g_acts[action_name]()
+    local act = g_acts.godot_actions[action_name]
+    g_acts[act]()
 end
 
 local godot_action = function (opts)
@@ -26,7 +28,7 @@ local godot_action = function (opts)
         },
         sorter = require('telescope.sorters').empty(),
 
-    attach_mappings = function(prompt_bufnr, map)
+    attach_mappings = function(prompt_bufnr, _)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry() -- get selection
         actions.close(prompt_bufnr) -- close picker
@@ -43,8 +45,12 @@ M.open = function ()
     godot_action(require('telescope.themes').get_cursor())
 end
 
-M.setup = function (opts)
+---@param opts GodotConfig
+function M.setup(opts)
     opts = opts or {}
+    -- require('godoterm.utils').debug(opts, "config")
+    require('godoterm.config').setup(opts)
+    require('godoterm.commands').setup()
 end
 
 return M
