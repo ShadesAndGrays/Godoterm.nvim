@@ -1,4 +1,5 @@
 local utils = require("godoterm.utils")
+---@type GodotInstanceManager
 local instance_m = require("godoterm.instance_manager")
 local M = {}
 
@@ -12,9 +13,9 @@ local function close_editor()
     else
         vim.ui.select(editors, {
             prompt = 'Which editor would you like to close',
-            ---@param item GodotInstance
             format_item = function (item)
-                return 'created ' .. os.time() - item.time_created .. ' secs ago'
+                local fmt = string.format("%s (%d) created %d sec ago", item.type, item.pid,os.time()-item.time_created)
+                return fmt
             end
         }, function (_,idx)
             instance_m.kill(instance_m.remove(idx))

@@ -1,19 +1,38 @@
+local config = require("godoterm.config") ---@type GodotConfig
+local utils = require("godoterm.utils") ---@type  GodotUtils
+
 ---@class GodotInstanceManager
 ---@field instances? GodotInstance[] 
----@field create_instance? fun(config:GodotConfig,replace:boolean):GodotInstance function create create a running instance of godot
+---@field create_instance? fun(config:GodotConfig):GodotInstance Creates a running instance of Godot
+---@field launch_scene? fun(scene:string):GodotInstance Creates a running instance of Godot. Expects a path to a scene
 ---@field debug? fun() check the current state of the instance manager 
 ---@field kill? fun(instance:GodotInstance) kills a running instance 
 ---@field kill_all? fun() kills all running instances 
 ---@field get_instances? fun(): GodotInstance[]
 ---@field remove? fun(idx: number) : GodotInstance removes an instance from the of instances
+---@field spawn? fun(spawn_config:SpawnConfig) : GodotInstance removes an instance from the of instances
+
+
 ---@class GodotInstance
 ---@field pid number 
 ---@field handle number 
 ---@field time_created number
+---@field type? InstanceType 
+
+---@class SpawnConfig
+---@field command string
+---@field path string
+
+---@enum InstanceType
+local InstanceType = {
+    editor = "Editor",
+    scene = "Scene"
+}
 
 
 ---@type GodotInstanceManager
 local M = {}
+
 M.instances = {}
 
 function M.get_instances()
@@ -23,7 +42,7 @@ end
 
 function M.remove(idx)
     if not idx then
-        return
+        return {}
     end
     table.remove(M.instances, idx)
     return M.instances[idx]
@@ -37,6 +56,7 @@ function M.kill(instance)
         vim.uv.kill(instance.pid, vim.uv.constants.SIGTERM) -- kill it with fire
         -- instance.pid = nil -- uninitialze process
         -- instance.handle = nil
+        -- instance.time_created = nil
         instance = nil
     end
 end
@@ -48,32 +68,23 @@ function M.kill_all()
 end
 
 function M.debug()
-    require("godoterm.utils").debug(M,"GodotInstanceManager")
+    utils.debug(M,"GodotInstanceManager")
 end
 
-
----@param opts GodotConfig
----@param replace boolean
-function M.create_instance(opts,replace)
-    local cwd = vim.uv.cwd()
-    if cwd == nil then
-        error("Current working directory does not exist")
-    end
+function M.spawn(spawn_config)
 
     local stdin = vim.uv.new_pipe()
     local stdout = vim.uv.new_pipe()
     local stderr = vim.uv.new_pipe()
-    print("stdin", stdin)
-    print("stdout", stdout)
-    print("stderr", stderr)
 
-    local handle, pid = vim.uv.spawn(opts.exec, {
-        args = {"--editor", cwd},
-        cwd = cwd,
+    assert(stdin, "stdin is nil")
+    assert(stdout, "stdout is nil")
+    assert(stderr, "stderr is nil")
+
+    local handle, pid = vim.uv.spawn(config.config.exec, {
+        cwd = config.config.cwd,
+        args = {spawn_config.command,spawn_config.path},
         stdio = {stdin, stdout, stderr},
-        -- env = {} ,
-        -- uid = 1000,
-        -- gid = 1000,
         verbatim = true,
         detached = false,
         hide = true
@@ -114,6 +125,20 @@ function M.create_instance(opts,replace)
             print("process closed", handle, pid)
         end)
     end)
+
+    return instance
+end
+
+function M.create_instance()
+    local instance = M.spawn({ command = "--editor", path = config.config.cwd})
+    instance.type = InstanceType.editor
+    return instance
+end
+
+function M.launch_scene(scene)
+    local instance = M.spawn({ command = "", path = scene})
+    instance.type = InstanceType.scene
+    return instance
 end
 
 return M
