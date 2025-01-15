@@ -3,7 +3,7 @@ local utils = require("godoterm.utils") ---@type  GodotUtils
 
 ---@class GodotInstanceManager
 ---@field instances? GodotInstance[] 
----@field create_instance? fun(config:GodotConfig):GodotInstance Creates a running instance of Godot
+---@field create_instance? fun():GodotInstance Creates a running instance of Godot
 ---@field launch_scene? fun(scene:string):GodotInstance Creates a running instance of Godot. Expects a path to a scene
 ---@field debug? fun() check the current state of the instance manager 
 ---@field kill? fun(instance:GodotInstance) kills a running instance 

@@ -1,18 +1,20 @@
+local config = require("godoterm.config") ---@type GodotConfig
 ---@class GodotUtils
 ---@field cwd_has_project fun():boolean
 ---@field get_tscn_files fun():string[]
 ---@field debug fun(value:any,name:string)
+
 ---@type GodotUtils
 local M = {}
 
 ---Returns true if the current working directory has a godot project file project.godot
 ---@return boolean
  function M.cwd_has_project()
-    local cwd = vim.uv.cwd()
-    if cwd then
-        local project_file = vim.fs.find("project.godot",{path = cwd})
-        return #project_file > 0
-    end
+        for project_file in vim.fs.dir(config.config.cwd,{depth = 0}) do
+            if project_file == "project.godot" then
+                return true
+            end
+        end
     return false
 end
 
