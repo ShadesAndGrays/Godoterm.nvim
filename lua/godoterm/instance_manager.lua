@@ -42,14 +42,17 @@ end
 
 function M.remove(idx)
     if not idx then
+        vim.notify("index does not exist",vim.log.levels.ERROR)
         return {}
     end
+    local instance = M.instances[idx]
     table.remove(M.instances, idx)
-    return M.instances[idx]
+    return instance
 end
 
 function M.kill(instance)
     if not instance then
+        vim.notify("cannot kill nil instance",vim.log.levels.ERROR)
         return
     end
     if instance.pid then -- process is currently running
@@ -58,6 +61,8 @@ function M.kill(instance)
         -- instance.handle = nil
         -- instance.time_created = nil
         instance = nil
+    else
+        vim.notify("instance is not running",vim.log.levels.ERROR)
     end
 end
 
@@ -97,6 +102,7 @@ function M.spawn(spawn_config)
     --- create and append instance
     local instance = { pid = pid, handle = handle, time_created = os.time()}
     table.insert(M.instances, instance)
+    local idx = #M.instances
 
 
     vim.uv.read_start(stdout, function(err, data)
@@ -122,6 +128,12 @@ function M.spawn(spawn_config)
     vim.uv.shutdown(stdin, function()
         print("stdin shutdown", stdin)
         vim.uv.close(handle, function()
+            -- for i = 1, #M.instances, 1 do
+            --     if M.instances[i].pid == pid then
+            --         M.kill(M.remove(i))
+            --         break
+            --     end
+            -- end
             print("process closed", handle, pid)
         end)
     end)

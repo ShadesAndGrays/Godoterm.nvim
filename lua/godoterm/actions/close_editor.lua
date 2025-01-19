@@ -18,7 +18,9 @@ local function close_editor()
                 return fmt
             end
         }, function (_,idx)
-            instance_m.kill(instance_m.remove(idx))
+            if idx then
+                instance_m.kill(instance_m.remove(idx))
+            end
         end)
     end
 

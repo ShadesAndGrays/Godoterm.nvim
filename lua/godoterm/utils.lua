@@ -34,8 +34,6 @@ function M.get_tscn_files()
     return {}
 end
 
-M.get_tscn_files()
-
 ---Print with vim.inspect
 ---@param value any
 ---@param name string

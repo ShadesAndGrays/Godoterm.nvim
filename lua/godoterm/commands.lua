@@ -13,7 +13,7 @@ function M.setup()
         callback = function(ev)
             -- require('scratch-buffer').open()
             -- vim.api.nvim_put({'Hello to gdscript',string.format('event fired: %s', vim.inspect(ev))},"",true,true)
-            vim.notify('Valid gdscript file',vim.log.levels.INFO)
+            -- vim.notify('Valid gdscript file',vim.log.levels.INFO)
         end
     })
 
